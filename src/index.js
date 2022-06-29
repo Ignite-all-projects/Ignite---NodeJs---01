@@ -36,7 +36,9 @@ app.post("/account", (request, response) => {
 app.get("/statement/:cpf", (request, response) => {
     const {cpf} = request.params;
 
-    const custumer = customers.find(custumer => custumer.cpf === cpf);
+    const custumer = customers.find(custumer => custumer.cpf === cpf);  
+
+    
 
 
     return response.json(custumer.statement)
