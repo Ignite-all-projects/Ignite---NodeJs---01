@@ -17,6 +17,8 @@ const customers = [];
 app.post("/account", (request, response) => {
   const { cpf, name } = request.body;
 
+  console.log(cpf, name, 'aaaaaa')
+
   const customerAlreadyExists = customers.some((custumer) => custumer.cpf === cpf)
 
   if(customerAlreadyExists) {
@@ -30,16 +32,22 @@ app.post("/account", (request, response) => {
     statement: [],
   });
 
+  console.log(customers, 'aaa')
+
   return response.status(201).send();
 });
 
-app.get("/statement/:cpf", (request, response) => {
-    const {cpf} = request.params;
+app.get("/statement", (request, response) => {
+    const {cpf} = request.headers;
+
+  console.log(customers, 'bb')
+
 
     const custumer = customers.find(custumer => custumer.cpf === cpf);  
 
-    
-
+    if(!custumer) {
+      return response.status(400).json({ error: "custumer not found "})
+    }
 
     return response.json(custumer.statement)
 })
