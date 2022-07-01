@@ -5,19 +5,27 @@ const app = express();
 
 app.use(express.json());
 
-/**
- * cpf - string
- * name - string
- * id - uui
- * statement []
- */
 
 const customers = [];
 
+//middleware
+function verifyIfExistAccountCPF(request, response, next) {
+  const {cpf} = request.headers;
+
+  const customer = customers.find(custumer => custumer.cpf === cpf);  
+
+  
+  if(!customer) {
+    return response.status(400).json({ error: "custumer not found "})
+  }
+
+  request.customer = customer;
+
+  return next();
+}
+
 app.post("/account", (request, response) => {
   const { cpf, name } = request.body;
-
-  console.log(cpf, name, 'aaaaaa')
 
   const customerAlreadyExists = customers.some((custumer) => custumer.cpf === cpf)
 
@@ -32,24 +40,36 @@ app.post("/account", (request, response) => {
     statement: [],
   });
 
-  console.log(customers, 'aaa')
-
   return response.status(201).send();
 });
 
-app.get("/statement", (request, response) => {
-    const {cpf} = request.headers;
+// app.use(verifyIfExistAccountCPF);
 
-  console.log(customers, 'bb')
+app.get("/statement", verifyIfExistAccountCPF, (request, response) => {
+    const { customer} = request;
+
+    return response.json(customer.statement)
+});
 
 
-    const custumer = customers.find(custumer => custumer.cpf === cpf);  
+app.post("/deposit", verifyIfExistAccountCPF, (request, response) => {
+    const { description, amount } = request.body;
 
-    if(!custumer) {
-      return response.status(400).json({ error: "custumer not found "})
+    console.log(request)
+
+    const { customer } = request;
+  
+    
+    const statementOperation = {
+      description, 
+      amount,
+      created_at: new Date(),
+      type: 'credit'
     }
 
-    return response.json(custumer.statement)
+    customer.statement.push(statementOperation);
+
+    return response.status(201).send();
 })
 
 app.listen(3333);
